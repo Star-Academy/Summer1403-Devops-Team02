@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var AddrRegex = regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`)
+var AddrRegex = regexp.MustCompile(`^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$`)
 
 func traceRouteHandler(w http.ResponseWriter, r *http.Request) {
 	path, _, _ := strings.Cut(r.URL.Path, "?")
