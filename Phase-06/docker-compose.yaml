@@ -1,21 +1,40 @@
 services:
   backend:
+    restart: always
+    image: traceroute-api
     build:
       context: ./api
       dockerfile: Dockerfile
-    image: traceroute-api
-    restart: always
+
     ports:
       - "9123:8080"
+
     depends_on:
       database:
         condition: service_healthy
 
   database:
+    restart: always
     image: redis:latest
+
     healthcheck:
       test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
       interval: 1s
       timeout: 3s
       retries: 5
-    command: [ "redis-server" ]
+
+    volumes:
+      - redis-data:/data
+
+    command:
+      [
+        "redis-server",
+        "--save",
+        "60",
+        "1",
+        "--loglevel",
+        "warning"
+      ]
+
+volumes:
+  redis-data: {}
