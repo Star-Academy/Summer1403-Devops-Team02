@@ -12,9 +12,9 @@ RUN go mod download
 
 COPY *.go ./
 
-RUN go build -o /my-traceroute
+RUN go build -o ./my-traceroute
 
 
 EXPOSE 8080
 
-CMD ["/my-traceroute"]
+CMD ["./my-traceroute"]
