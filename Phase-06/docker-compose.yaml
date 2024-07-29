@@ -1,0 +1,22 @@
+version: "3"
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hellobackend
+    restart: always
+    ports:
+      - "9123:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: redis:latest
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    command: ["redis-server"]

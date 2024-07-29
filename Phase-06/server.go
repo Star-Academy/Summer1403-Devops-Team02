@@ -8,14 +8,15 @@ import (
 	"strings"
 )
 
-var AddrRegex = regexp.MustCompile(`^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$`)
+var DomainRegex = regexp.MustCompile(`^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$`)
+var AddrRegex = regexp.MustCompile(`^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$`)
 
 func traceRouteHandler(w http.ResponseWriter, r *http.Request) {
 	path, _, _ := strings.Cut(r.URL.Path, "?")
 	trimmedPath := strings.Trim(path, "/")
 	addr := trimmedPath[strings.LastIndex(trimmedPath, "/")+1:]
 
-	if !AddrRegex.MatchString(addr) {
+	if !AddrRegex.MatchString(addr) && !DomainRegex.MatchString(addr) {
 		WriteBadRequest(w, "Invalid addr")
 		return
 	}
