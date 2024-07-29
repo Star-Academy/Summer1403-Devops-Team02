@@ -2,10 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -68,6 +68,6 @@ func WriteJSON(w http.ResponseWriter, data interface{}) ([]byte, error) {
 }
 
 func GenerateRedisKey(addr string, maxHops int) string {
-	timestamp := time.Now().Unix()
-	return fmt.Sprintf("%s:%d:%d", addr, maxHops, timestamp)
+	timestamp := time.Now().Format("2006-1-2 15:4:5")
+	return (addr + ":" + strconv.Itoa(maxHops) + ":" + timestamp)
 }
