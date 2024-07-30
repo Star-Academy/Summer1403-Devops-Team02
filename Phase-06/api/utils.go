@@ -2,10 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"regexp"
-	"strconv"
 	"time"
 )
 
@@ -45,10 +45,16 @@ func (h *RegexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func WriteBadRequest(w http.ResponseWriter, msg string) []byte {
-	w.WriteHeader(http.StatusBadRequest)
+	resp := WriteError(w, msg, http.StatusBadRequest)
+	log.Printf("Bad request: %s\n", resp)
+	return resp
+}
+
+func WriteError(w http.ResponseWriter, msg string, code int) []byte {
+	w.WriteHeader(code)
 	resp, _ := json.Marshal(map[string]string{"error": msg})
 
-	log.Printf("Bad request: %s\n", resp)
+	log.Printf("%s: %s\n", http.StatusText(code), resp)
 
 	w.Write(resp)
 	return resp
@@ -68,6 +74,6 @@ func WriteJSON(w http.ResponseWriter, data interface{}) ([]byte, error) {
 }
 
 func GenerateRedisKey(addr string, maxHops int) string {
-	timestamp := time.Now().Format("2006-1-2 15:4:5")
-	return (addr + ":" + strconv.Itoa(maxHops) + ":" + timestamp)
+	timestamp := time.Now().Unix()
+	return fmt.Sprintf("%s:%d:%d", addr, maxHops, timestamp)
 }

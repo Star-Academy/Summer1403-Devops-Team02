@@ -17,7 +17,7 @@ func traceRouteHandler(w http.ResponseWriter, r *http.Request) {
 	addr := trimmedPath[strings.LastIndex(trimmedPath, "/")+1:]
 
 	if !AddrRegex.MatchString(addr) && !DomainRegex.MatchString(addr) {
-		WriteBadRequest(w, "Invalid addr")
+		WriteBadRequest(w, "Invalid addr "+addr)
 		return
 	}
 
@@ -27,7 +27,11 @@ func traceRouteHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hops := TraceRoute(addr, maxHops)
+	hops, err := TraceRoute(addr, maxHops)
+	if err != nil {
+		WriteError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	result := make([]*TraceHopResponse, len(hops))
 	for i, hop := range hops {
