@@ -6,6 +6,9 @@ services:
       context: ./api
       dockerfile: Dockerfile
 
+    environment:
+      - REDIS_CONN_STR=redis://database:6379
+
     ports:
       - "9123:8080"
 
