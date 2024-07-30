@@ -45,10 +45,16 @@ func (h *RegexpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func WriteBadRequest(w http.ResponseWriter, msg string) []byte {
-	w.WriteHeader(http.StatusBadRequest)
+	resp := WriteError(w, msg, http.StatusBadRequest)
+	log.Printf("Bad request: %s\n", resp)
+	return resp
+}
+
+func WriteError(w http.ResponseWriter, msg string, code int) []byte {
+	w.WriteHeader(code)
 	resp, _ := json.Marshal(map[string]string{"error": msg})
 
-	log.Printf("Bad request: %s\n", resp)
+	log.Printf("%s: %s\n", http.StatusText(code), resp)
 
 	w.Write(resp)
 	return resp

@@ -39,43 +39,43 @@ type TraceHop struct {
 	RTT    time.Duration
 }
 
-func TraceRoute(addr string, maxHops int) []*TraceHop {
+func TraceRoute(addr string, maxHops int) ([]*TraceHop, error) {
 	c, err := icmp.ListenPacket("ip4:icmp", ListenAddr)
 	if err != nil {
 		panic(err)
 	}
 	defer c.Close()
 
+	// Resolve any DNS (if used) and get the real IP of the target
+	dst, err := net.ResolveIPAddr("ip4", addr)
+	if err != nil {
+		return nil, err
+	}
+
 	res := make([]*TraceHop, maxHops)
 
 	for i := 0; i < maxHops; i++ {
-		finished, dst, dur, err := getNthHop(c, addr, i+1)
+		finished, dst, dur, err := getNthHop(c, dst, i+1)
 		if err != nil {
 			res[i] = nil
 		} else {
 			res[i] = &TraceHop{IPAddr: dst.IP, RTT: dur}
 			if finished {
-				return res[:i+1]
+				return res[:i+1], nil
 			}
 		}
 
 	}
 
-	return res
+	return res, nil
 }
 
 // Mostly based on https://github.com/golang/net/blob/master/icmp/ping_test.go
 // All ye beware, there be dragons below...
 
-func getNthHop(c *icmp.PacketConn, addr string, ttl int) (bool, *net.IPAddr, time.Duration, error) {
+func getNthHop(c *icmp.PacketConn, dst *net.IPAddr, ttl int) (bool, *net.IPAddr, time.Duration, error) {
 	// Start listening for icmp replies
 	c.IPv4PacketConn().SetTTL(ttl)
-
-	// Resolve any DNS (if used) and get the real IP of the target
-	dst, err := net.ResolveIPAddr("ip4", addr)
-	if err != nil {
-		panic(err)
-	}
 
 	data := make([]byte, 64)
 	rand.Read(data)

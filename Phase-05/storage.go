@@ -11,14 +11,18 @@ var (
 	rdb *redis.Client = nil
 )
 
-func initRedis() {
+func initRedis() error {
 	if rdb == nil {
-		rdb = redis.NewClient(&redis.Options{
-			Addr:     "localhost:6379",
-			Password: "",
-			DB:       0,
-		})
+		opts, err := redis.ParseURL(redisConnStr)
+		if err != nil {
+			return err
+		}
+
+		rdb = redis.NewClient(opts)
+		return rdb.Ping(ctx).Err()
 	}
+
+	return nil
 }
 
 func saveToRedis(key string, value []byte) error {
