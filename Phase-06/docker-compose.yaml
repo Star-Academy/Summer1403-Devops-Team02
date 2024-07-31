@@ -1,7 +1,7 @@
 services:
   backend:
     restart: always
-    image: traceroute-api
+    image: ghcr.io/star-academy/summer1403-devops-team12/traceroute-api
     build:
       context: ./api
       dockerfile: Dockerfile
