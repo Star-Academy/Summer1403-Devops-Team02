@@ -20,7 +20,7 @@ spec:
 
       containers:
         - name: redis
-          image: redis
+          image: redis:alpine
 
           resources:
             limits:
