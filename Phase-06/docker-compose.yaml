@@ -2,9 +2,6 @@ services:
   backend:
     restart: always
     image: ghcr.io/star-academy/summer1403-devops-team12/traceroute-api
-    build:
-      context: ./api
-      dockerfile: Dockerfile
 
     environment:
       - REDIS_CONN_STR=redis://database:6379
