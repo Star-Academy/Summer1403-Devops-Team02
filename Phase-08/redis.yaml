@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: traceroute
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: redis-pvc
+
+      containers:
+        - name: redis
+          image: redis
+
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "256m"
+
+          ports:
+            - containerPort: 6379
+
+          volumeMounts:
+            - mountPath: "/data"
+              name: redis-data
+
+          env:
+            - name: SAVE_INTERVAL
+              valueFrom:
+                configMapKeyRef:
+                  name: redis-configs
+                  key: save-interval
+
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secrets
+                  key: redis-password
+
+          command:
+            - "redis-server"
+
+          args:
+            - "--requirepass"
+            - "$(REDIS_PASSWORD)"
+            - "--save"
+            - "$(SAVE_INTERVAL)"
+            - "1"
+            - "--dir"
+            - "/data"
+            - "--appendonly"
+            - "yes"
+            - "--loglevel"
+            - "notice"
+
+          livenessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  namespace: traceroute
+spec:
+  resources:
+    requests:
+      storage: 100Mi
+  volumeMode: Filesystem
+  storageClassName: standard # Don't know if this is a good idea but fixes the replace issue
+  volumeName: redis-pv
+  accessModes:
+    - ReadWriteOnce
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
