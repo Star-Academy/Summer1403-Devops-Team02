@@ -19,6 +19,8 @@ FROM alpine:3.20.0 AS final
 
 WORKDIR /app
 
+LABEL org.opencontainers.image.source https://github.com/Star-Academy/Summer1403-Devops-Team12
+
 COPY --from=build --chown=root:root /app/traceroute-api ./traceroute-api
 
 EXPOSE 8080
