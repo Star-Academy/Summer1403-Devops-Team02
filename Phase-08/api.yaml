@@ -4,7 +4,6 @@ metadata:
   name: api
   namespace: traceroute
 spec:
-  # replicas: 3
   replicas: 1
   selector:
     matchLabels:
@@ -35,20 +34,3 @@ spec:
                 secretKeyRef:
                   name: api-secrets
                   key: redis-conn-str
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: api
-  namespace: traceroute
-spec:
-  # type: LoadBalancer
-  type: NodePort
-  externalTrafficPolicy: Cluster
-
-  selector:
-    app: api
-  ports:
-    - port: 80
-      targetPort: 8080
-      nodePort: 30001
