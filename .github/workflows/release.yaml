@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - phase11
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    outputs:
+      new_tag: ${{ steps.generate_tag.outputs.new_tag }}
+      vversion: ${{ steps.generate_tag.outputs.new_tag }}
+      version: ${{ steps.pure_version.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bump version and push tag
+        id: generate_tag
+        uses: anothrNick/github-tag-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: patch
+          PATCH_STRING_TOKEN: fix
+          MINOR_STRING_TOKEN: feat
+          MAJOR_STRING_TOKEN: BREAKING
+
+      - name: Pure version
+        id: pure_version
+        run: echo "version=$(echo ${{  steps.generate_tag.outputs.new_tag }} | sed 's/^v//')" | tee -a $GITHUB_ENV
+
+  release:
+    runs-on: ubuntu-latest
+    needs:
+      - tag
+
+    permissions:
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Metadata extraction
+        id: metadata
+        uses: docker/metadata-action@v5
+        with:
+          # List of Docker images to use as base name for tags
+          images: |
+            ghcr.io/${{ github.repository }}/traceroute-api
+
+          # Generates Docker tags based on the following events/attributes
+          tags: |
+            type=raw,value=${{ needs.tag.outputs.version }}
+            type=raw,value=${{ needs.tag.outputs.vversion }}
+            latest
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          push: true
+          context: "{{defaultContext}}:Phase-05"
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
