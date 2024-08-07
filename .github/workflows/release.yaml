@@ -9,7 +9,8 @@ on:
 
 jobs:
   tag:
-    if: ${{ github.event.pull_request.merged == true }}
+    # If the PR is merged from phase05, then we will bump the version and push a new tag
+    if: ${{ github.event.pull_request.merged == true && github.head_ref == 'phase05' }}
     runs-on: ubuntu-latest
 
     permissions:
