@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -27,6 +28,7 @@ func initRedis() error {
 
 func saveToRedis(key string, value []byte) error {
 	if rdb == nil {
+		log.Println("Redis not initialized. Initializing now...")
 		initRedis()
 	}
 

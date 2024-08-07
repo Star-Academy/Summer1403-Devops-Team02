@@ -46,7 +46,7 @@ func traceRouteHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = saveToRedis(GenerateRedisKey(addr, maxHops), response)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
 
