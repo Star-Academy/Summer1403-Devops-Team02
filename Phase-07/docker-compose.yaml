@@ -15,7 +15,7 @@ services:
 
   database:
     restart: always
-    image: redis:latest
+    image: redis:7.4-alpine
 
     healthcheck:
       test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
