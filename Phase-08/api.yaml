@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: traceroute
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      imagePullSecrets:
+        - name: repo-secret
+
+      containers:
+        - name: api
+          image: ghcr.io/star-academy/summer1403-devops-team12/traceroute-api
+
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "256m"
+
+          ports:
+            - containerPort: 8080
+
+          env:
+            - name: REDIS_CONN_STR
+              valueFrom:
+                secretKeyRef:
+                  name: api-secrets
+                  key: redis-conn-str
